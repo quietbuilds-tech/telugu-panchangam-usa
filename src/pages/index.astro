@@ -1,0 +1,21 @@
+---
+// Root: redirect to the preferred language (stored in localStorage) or English by default.
+---
+
+<script is:inline>
+  (() => {
+    try {
+      const lang = localStorage.getItem('tp_lang');
+      if (lang === 'te') {
+        window.location.replace('/te/today');
+        return;
+      }
+    } catch {}
+    window.location.replace('/en/today');
+  })();
+</script>
+
+<noscript>
+  <meta http-equiv="refresh" content="0;url=/en/today" />
+  <p><a href="/en/today">Go to Telugu Panchangam USA</a></p>
+</noscript>

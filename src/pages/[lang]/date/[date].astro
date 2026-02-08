@@ -1,0 +1,108 @@
+---
+import Layout from '@/components/Layout.astro';
+import { LANGS, translations, type Lang } from '@/i18n';
+import { loadYearData, formatHumanDateLang, normalizeFestivalList, nextPrevDates, pickLabel, pickTimedLabel, formatTimeRange } from '@/lib/panchangam';
+
+export async function getStaticPaths() {
+  const year = await loadYearData();
+  const dates = Object.keys(year.daysByDate).sort();
+  return LANGS.flatMap((lang) => dates.map((d) => ({ params: { lang, date: d } })));
+}
+
+const { lang: langParam, date } = Astro.params as { lang: Lang; date: string };
+if (!LANGS.includes(langParam)) throw new Error(`Unsupported lang: ${langParam}`);
+const lang = langParam;
+const t = translations[lang];
+
+const year = await loadYearData();
+const day = year.daysByDate[date];
+if (!day) throw new Error(`No data for date ${date}`);
+
+const allDatesSorted = Object.keys(year.daysByDate).sort();
+const { prev, next } = nextPrevDates(allDatesSorted, date);
+const human = formatHumanDateLang(date, lang);
+const festivals = normalizeFestivalList(day.festivals, lang);
+
+
+const pageTitle = `${human.title} Telugu Panchangam (ET) — ${t.brandTitle}`;
+const desc = lang === 'te'
+  ? `${human.title} (న్యూజెర్సీ, ఈస్ట్రన్ టైమ్) తెలుగు పంచాంగం — తిథి, నక్షత్రం, పండుగలు, సమయాలు.`
+  : `Telugu Panchangam for ${human.title} in New Jersey (Eastern Time): tithi, nakshatra, festivals and timings.`;
+---
+
+<Layout title={pageTitle} description={desc} activeTab="today" lang={lang}>
+  <h1 class="h1">{human.title} • {human.weekday}</h1>
+
+  <div class="card stack">
+    <div class="btnrow">
+      <a class="btn" href={prev ? `/${lang}/date/${prev}` : '#'} aria-disabled={prev ? 'false' : 'true'}>{t.common.previous}</a>
+      <a class="btn" href={next ? `/${lang}/date/${next}` : '#'} aria-disabled={next ? 'false' : 'true'}>{t.common.next}</a>
+    </div>
+
+    <div class="kv"><div class="kv__k">{t.fields.samvatsaram}</div><div>{pickLabel(day.samvatsaram, lang)}</div></div>
+    <div class="kv"><div class="kv__k">{t.fields.ayanam}</div><div>{pickLabel(day.ayanam, lang)}</div></div>
+    <div class="kv"><div class="kv__k">{t.fields.ruthuvu}</div><div>{pickLabel(day.ruthuvu, lang)}</div></div>
+    <div class="kv"><div class="kv__k">{t.fields.masam}</div><div>{pickLabel(day.masam, lang)}</div></div>
+    <div class="kv"><div class="kv__k">{t.fields.paksham}</div><div>{pickLabel(day.paksham, lang)}</div></div>
+
+    <div class="kv">
+      <div class="kv__k">{t.fields.tithi}</div>
+      <div class="pills">
+        {day.tithi?.map((ti) => (
+          <span class="pill pill--plain">
+            {pickTimedLabel(ti, lang)}{ti.qualifier ? ` (${ti.qualifier})` : ''}{ti.time ? ` • ${t.fields.until} ${ti.time}${ti.rollover ? '+' : ''}` : ''}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    <div class="kv">
+      <div class="kv__k">{t.fields.nakshatra}</div>
+      <div class="pills">
+        {day.nakshatra?.map((n) => (
+          <span class="pill pill--plain">
+            {pickTimedLabel(n, lang)}{n.qualifier ? ` (${n.qualifier})` : ''}{n.time ? ` • ${t.fields.until} ${n.time}${n.rollover ? '+' : ''}` : ''}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    <div class="kv">
+      <div class="kv__k">{t.fields.durmuhurtham}</div>
+      <div>
+        {day.durmuhurtham?.length
+          ? day.durmuhurtham.map((r) => formatTimeRange(r)).filter(Boolean).join(', ')
+          : <span class="muted">—</span>}
+      </div>
+    </div>
+
+    <div class="kv">
+      <div class="kv__k">{t.fields.varjyam}</div>
+      <div>
+        {day.varjyam?.type === 'none'
+          ? t.fields.none
+          : day.varjyam?.type === 'ranges'
+            ? day.varjyam.ranges.map((r) => formatTimeRange(r)).filter(Boolean).join(', ')
+            : <span class="muted">{t.fields.unknown}</span>}
+      </div>
+    </div>
+
+    <div class="kv">
+      <div class="kv__k">{t.common.festivalsNotes}</div>
+      <div>
+        {festivals.length ? (
+          festivals.length === 1 ? (
+            <div>{festivals[0].name}</div>
+          ) : (
+            <ul>
+              {festivals.map((f) => <li>{f.name}</li>)}
+            </ul>
+          )
+        ) : (
+          <span class="muted">{t.common.noFestivals}</span>
+        )}
+      </div>
+    </div>
+
+  </div>
+</Layout>

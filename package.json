@@ -1,0 +1,16 @@
+{
+  "name": "telugu-panchangam-usa",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && node scripts/generate-sitemap.mjs",
+    "preview": "astro preview",
+    "clean": "rm -rf dist .astro node_modules/.vite",
+    "regen": "npm run clean && npm run build"
+  },
+  "dependencies": {
+    "astro": "^4.16.0"
+  }
+}

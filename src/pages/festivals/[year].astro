@@ -1,0 +1,26 @@
+---
+export const prerender = true;
+
+import { YEAR } from "@/lib/panchangam";
+
+export function getStaticPaths() {
+  return [{ params: { year: String(YEAR) } }];
+}
+
+const { year } = Astro.params;
+const target = `/en/festivals/${year}`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <link rel="canonical" href={target} />
+    <meta name="robots" content="noindex" />
+    <title>Redirecting…</title>
+  </head>
+  <body>
+    <p>Redirecting to <a href={target}>{target}</a>…</p>
+  </body>
+</html>

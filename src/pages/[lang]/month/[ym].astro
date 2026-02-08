@@ -1,0 +1,155 @@
+---
+import Layout from '@/components/Layout.astro';
+import { LANGS, translations, type Lang } from '@/i18n';
+import { loadYearData, ymToLabelLang, ymToLabel, monthDays, weekdayIndexSun0, normalizeFestivalList, pickLabel, pickTimedLabel, formatTimeRanges, formatTimeRangesLinesFirstPrefix } from '@/lib/panchangam';
+
+function ymPrevNext(ym: string): { prev: string | null; next: string | null } {
+  const [y, m] = ym.split('-').map(Number);
+  const prevM = m - 1;
+  const nextM = m + 1;
+  const prev = prevM >= 1 ? `${y}-${String(prevM).padStart(2, '0')}` : null;
+  const next = nextM <= 12 ? `${y}-${String(nextM).padStart(2, '0')}` : null;
+  return { prev, next };
+}
+
+function moonPhaseFromTithi(tithi: any, lang: Lang): 'purnima' | 'amavasya' | null {
+  if (!tithi) return null;
+  // tithi can be an array of timed entries, a single object, or a string
+  const first = Array.isArray(tithi) ? tithi[0] : tithi;
+  const label = typeof first === 'string'
+    ? first
+    : (first?.english || first?.telugu || first?.label || first?.raw || '');
+  const s = String(label).toLowerCase();
+
+  // Prefer key if present (most reliable)
+  const key = typeof first === 'object' && first?.key ? String(first.key).toLowerCase() : '';
+  if (key === 'purnima') return 'purnima';
+  if (key === 'amavasya') return 'amavasya';
+
+  // English spellings
+  if (s.includes('purnima') || s.includes('pournami')) return 'purnima';
+  if (s.includes('amavasya') || s.includes('amavasia')) return 'amavasya';
+
+  // Telugu spellings
+  if (s.includes('పౌర్ణమి') || s.includes('పూర్ణిమ') || s.includes('పున్నమి')) return 'purnima';
+  if (s.includes('అమావాస్య')) return 'amavasya';
+
+  return null;
+}
+
+
+export async function getStaticPaths() {
+  const months = Array.from({ length: 12 }, (_, i) => `2026-${String(i + 1).padStart(2, '0')}`);
+  return LANGS.flatMap((lang) => months.map((ym) => ({ params: { lang, ym } })));
+}
+
+const { lang: langParam, ym } = Astro.params as { lang: Lang; ym: string };
+if (!LANGS.includes(langParam)) throw new Error(`Unsupported lang: ${langParam}`);
+const lang = langParam;
+const t = translations[lang];
+
+const year = await loadYearData();
+const label = ymToLabelLang(ym, lang);
+const { prev, next } = ymPrevNext(ym);
+
+const dates = Object.keys(year.daysByDate).filter(d => d.startsWith(ym)).sort();
+const firstDate = dates[0];
+const totalDays = monthDays(ym);
+const firstWeekday = firstDate ? weekdayIndexSun0(firstDate) : 0;
+
+const monthFestivals = dates.flatMap(d =>
+  normalizeFestivalList(year.daysByDate[d]?.festivals, lang).map(f => ({ date: d, name: f.name }))
+);
+
+function firstTimedRaw(list: any[] | undefined, fallback = '—'): string {
+  if (!list || list.length === 0) return fallback;
+  const ti = list[0];
+  if (ti?.label) {
+    const until = ti.time ? ` ${ti.time}${ti.rollover ? '+' : ''}` : '';
+    return `${pickTimedLabel(ti, lang)}${until}`;
+  }
+  return fallback;
+}
+
+// formatTimeRanges() is imported from lib so month + day pages render Durmuhurtham/Varjyam consistently.
+
+const pageTitle = `${label} Telugu Panchangam (ET) — ${t.brandTitle}`;
+const desc = lang === 'te'
+  ? `${label} కోసం నెలవారీ తెలుగు పంచాంగం క్యాలెండర్ (ఈస్ట్రన్ టైమ్).`
+  : `Monthly Telugu Panchangam calendar for ${label} in Eastern Time.`;
+---
+
+<Layout title={pageTitle} description={desc} activeTab="month" lang={lang} wide={true}>
+  <div class="month-head">
+  <h1 class="h1">{label}</h1>
+
+  <div class="row" style="margin: 10px 0 14px;">
+    <a class="btn" href={prev ? `/${lang}/month/${prev}` : '#'} aria-disabled={prev ? 'false' : 'true'}>
+      ‹ {prev ? ymToLabelLang(prev, lang).split(' ')[0] : '—'}
+    </a>
+    <a class="btn" href={next ? `/${lang}/month/${next}` : '#'} aria-disabled={next ? 'false' : 'true'}>
+      {next ? ymToLabelLang(next, lang).split(' ')[0] : '—'} ›
+    </a>
+  </div>
+
+  </div>
+  <div class="calendar-scroll">
+  <div class="weekdays">
+    <div>{t.week.sun}</div><div>{t.week.mon}</div><div>{t.week.tue}</div><div>{t.week.wed}</div><div>{t.week.thu}</div><div>{t.week.fri}</div><div>{t.week.sat}</div>
+  </div>
+
+  <div class="calendar" aria-label={`Calendar month ${label}`}>
+    {Array.from({ length: firstWeekday }).map(() => <div class="cell cell--blank"></div>)}
+    {Array.from({ length: totalDays }, (_, i) => {
+      const dayNum = i + 1;
+      const iso = `${ym}-${String(dayNum).padStart(2, '0')}`;
+      const info = year.daysByDate[iso];
+      const hasFestival = !!(info && normalizeFestivalList(info.festivals, lang).length);
+      const masam = info?.masam;
+      const tithi = firstTimedRaw(info?.tithi);
+      const nak = firstTimedRaw(info?.nakshatra);
+      const phase = moonPhaseFromTithi(info?.tithi, lang);
+      const duLines = formatTimeRangesLinesFirstPrefix('Du.', info?.durmuhurtham);
+      const du = duLines.length ? duLines : null;
+      const va = info?.varjyam?.type === 'ranges' ? formatTimeRanges('Va.', info?.varjyam?.ranges) : null;
+      return (
+        <a class="cell" href={`/${lang}/date/${iso}`} aria-label={`Open Panchangam for ${iso}`}>
+          <div class="cell__date">{dayNum}{phase ? <span class={`moon moon--${phase}`} aria-hidden="true"></span> : null}</div>
+          {info ? (
+            <div class="cell__meta">
+              {masam ? <div class="mutedline">{pickLabel(masam, lang)}</div> : null}
+              <div><span class="accent">{tithi}</span></div>
+              <div>{nak}</div>
+              {du ? (
+                <div class="tiny">
+                  {du.map((line, idx) => (
+                    <span>
+                      {idx ? <br /> : null}
+                      {line}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+              {va ? <div class="tiny">{va}</div> : null}
+            </div>
+          ) : null}
+          {hasFestival ? <span class="dot" aria-hidden="true"></span> : null}
+        </a>
+      );
+    })}
+  </div>
+  </div>
+
+  <h2 class="h2">{t.common.thisMonth}</h2>
+  <div class="card">
+    {monthFestivals.length ? (
+      <ul>
+        {monthFestivals.map((f) => (
+          <li><a href={`/${lang}/date/${f.date}`}>{f.date}: {f.name}</a></li>
+        ))}
+      </ul>
+    ) : (
+      <p class="muted">{t.common.noFestivals}</p>
+    )}
+  </div>
+</Layout>

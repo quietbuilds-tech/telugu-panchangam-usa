@@ -1,0 +1,69 @@
+---
+import Layout from '@/components/Layout.astro';
+import { LANGS, translations, type Lang } from '@/i18n';
+import { loadYearData, normalizeFestivalList, ymToLabelLang } from '@/lib/panchangam';
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  // MVP supports 2026 only
+  return LANGS.map((lang) => ({ params: { lang, year: '2026' } }));
+}
+
+const { lang: langParam, year } = Astro.params as { lang: Lang; year: string };
+if (!LANGS.includes(langParam)) throw new Error(`Unsupported lang: ${langParam}`);
+const lang = langParam;
+const t = translations[lang];
+
+const data = await loadYearData();
+const y = Number(year);
+if (y !== 2026) throw new Error('Only 2026 is supported in this MVP');
+
+// Build a month -> list of festival entries (date + name)
+type FestivalEntry = { date: string; name: string };
+const byMonth: Record<string, FestivalEntry[]> = {};
+
+for (const date of Object.keys(data.daysByDate).sort()) {
+  if (!date.startsWith('2026-')) continue;
+  const ym = date.slice(0, 7);
+  const day = data.daysByDate[date];
+  const fests = normalizeFestivalList(day?.festivals, lang);
+  if (!fests.length) continue;
+  byMonth[ym] ??= [];
+  for (const f of fests) {
+    byMonth[ym].push({ date, name: f.name });
+  }
+}
+
+const months = Array.from({ length: 12 }, (_, i) => `2026-${String(i + 1).padStart(2, '0')}`);
+
+const pageTitle = lang === 'te'
+  ? `2026 పండుగలు — ${t.brandTitle}`
+  : `Festivals 2026 — ${t.brandTitle}`;
+const desc = lang === 'te'
+  ? `2026 సంవత్సరానికి నెలవారీ పండుగల జాబితా (ఈస్ట్రన్ టైమ్).`
+  : `Month-wise festivals list for 2026 (Eastern Time).`;
+---
+
+<Layout title={pageTitle} description={desc} activeTab="festivals" lang={lang}>
+  <h1 class="h1">{lang === 'te' ? '2026 పండుగలు' : 'Festivals — 2026'}</h1>
+
+  {months.map((ym) => {
+    const list = byMonth[ym] ?? [];
+    const label = ymToLabelLang(ym, lang);
+    return (
+      <section class="card" style="margin: 12px 0;">
+        <h2 class="h2" style="margin-top: 0;">{label}</h2>
+        {list.length ? (
+          <ul>
+            {list.map((f) => (
+              <li><a href={`/${lang}/date/${f.date}`}>{f.date}: {f.name}</a></li>
+            ))}
+          </ul>
+        ) : (
+          <p class="muted">{t.common.noFestivals}</p>
+        )}
+      </section>
+    );
+  })}
+</Layout>
