@@ -1,0 +1,31 @@
+---
+import { LANGS, type Lang } from '@/i18n';
+import { etTodayISO } from '@/lib/panchangam';
+
+export const prerender = true;
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }));
+}
+
+const { lang } = Astro.params as { lang: Lang };
+const safeLang: Lang = LANGS.includes(lang) ? lang : 'en';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const date = etTodayISO();
+const target = `${base}/${safeLang}/date/${date}/`;
+---
+<!doctype html>
+<html lang={safeLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <link rel="canonical" href={target} />
+    <meta name="robots" content="noindex" />
+    <title>Redirecting…</title>
+  </head>
+  <body>
+    <p>Redirecting to <a href={target}>{target}</a>…</p>
+    <script is:inline define:vars={{ target }}>
+      location.replace(target);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+---
+import { loadYearData } from '@/lib/panchangam';
+
+export const prerender = true;
+export async function getStaticPaths() {
+  const data = await loadYearData();
+  return Object.keys(data.daysByDate).map((date) => ({ params: { date } }));
+}
+
+const { date } = Astro.params;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const target = `${base}/en/date/${date}/`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content={`0; url=${target}`} />
+    <link rel="canonical" href={target} />
+    <meta name="robots" content="noindex" />
+    <title>Redirecting…</title>
+  </head>
+  <body>
+    <p>Redirecting to <a href={target}>{target}</a>…</p>
+    <script is:inline define:vars={{ target }}>
+      location.replace(target);
+    </script>
+  </body>
+</html>
