@@ -1,5 +1,6 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
 export const GET: APIRoute = ({ redirect }) => {
-  return redirect('/en/about', 302);
+  const base = import.meta.env.BASE_URL;
+  return redirect(`${base}/en/about`, 302);
 };

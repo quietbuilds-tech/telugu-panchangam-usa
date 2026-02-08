@@ -1,5 +1,5 @@
-import type { APIRoute } from 'astro';
-import { loadYearData } from '@/lib/panchangam';
+import type { APIRoute } from "astro";
+import { loadYearData } from "@/lib/panchangam";
 
 // Static build: pre-render legacy redirect pages for each known date.
 export const prerender = true;
@@ -10,5 +10,6 @@ export async function getStaticPaths() {
 
 export const GET: APIRoute = ({ params, redirect }) => {
   const date = params.date;
-  return redirect(`/en/date/${date}`, 302);
+  const base = import.meta.env.BASE_URL;
+  return redirect(`${base}/en/date/${date}`, 302);
 };
