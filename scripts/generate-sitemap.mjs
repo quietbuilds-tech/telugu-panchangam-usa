@@ -4,8 +4,7 @@ import path from 'node:path';
 const root = path.resolve(process.cwd());
 const distDir = path.join(root, 'dist');
 
-const site = (process.env.SITE || 'https://quietbuilds-tech.github.io').replace(/\/$/, '');
-const basePath = '/telugu-panchangam-usa';
+const site = (process.env.SITE || 'https://telugu-panchangam.com').replace(/\/$/, '');
 
 const dataPath = path.join(root, 'data', '2026-daysByDate.json');
 const raw = fs.readFileSync(dataPath, 'utf-8');
@@ -17,15 +16,15 @@ const months = Array.from(new Set(dates.map(d => d.slice(0, 7)))).sort();
 const langs = ['en', 'te'];
 
 const urls = [
-  `${basePath}/`,
+  `/`,
   ...langs.flatMap(l => [
-    `${basePath}/${l}/`,
-    `${basePath}/${l}/today/`,
-    ...dates.map(d => `${basePath}/${l}/date/${d}/`),
-    ...months.map(m => `${basePath}/${l}/month/${m}/`),
-    `${basePath}/${l}/festivals/`,
-    `${basePath}/${l}/festivals/2026/`,
-    `${basePath}/${l}/about/`,
+    `/${l}/`,
+    `/${l}/today/`,
+    ...dates.map(d => `/${l}/date/${d}/`),
+    ...months.map(m => `/${l}/month/${m}/`),
+    `/${l}/festivals/`,
+    `/${l}/festivals/2026/`,
+    `/${l}/about/`,
   ]),
 ];
 
@@ -54,6 +53,6 @@ console.log(`Generated sitemap.xml with ${urls.length} URLs`);
 const robotsPath = path.join(distDir, 'robots.txt');
 if (fs.existsSync(robotsPath)) {
   const robots = fs.readFileSync(robotsPath, 'utf-8')
-    .replace(/Sitemap:.*$/m, `Sitemap: ${site}${basePath}/sitemap.xml`);
+    .replace(/Sitemap:.*$/m, `Sitemap: ${site}/sitemap.xml`);
   fs.writeFileSync(robotsPath, robots, 'utf-8');
 }
