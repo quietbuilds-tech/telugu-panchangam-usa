@@ -1,5 +1,6 @@
-import { defineConfig } from 'astro/config';
+import { defineConfig } from "astro/config";
 
 export default defineConfig({
-  site: 'https://example.com', // TODO: replace with your real domain for correct sitemap URLs
+  site: "https://github.com/quietbuilds-tech",
+  base: "/telugu-panchangam-usa", // TODO: replace with your real domain for correct sitemap URLs
 });
