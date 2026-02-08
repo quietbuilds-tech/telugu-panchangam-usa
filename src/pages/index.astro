@@ -1,21 +1,22 @@
 ---
 // Root: redirect to the preferred language (stored in localStorage) or English by default.
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
-<script is:inline>
+<script is:inline define:vars={{ base }}>
   (() => {
     try {
       const lang = localStorage.getItem('tp_lang');
       if (lang === 'te') {
-        window.location.replace('/te/today');
+        window.location.replace(base + '/te/today/');
         return;
       }
     } catch {}
-    window.location.replace('/en/today');
+    window.location.replace(base + '/en/today/');
   })();
 </script>
 
 <noscript>
-  <meta http-equiv="refresh" content="0;url=/en/today" />
-  <p><a href="/en/today">Go to Telugu Panchangam USA</a></p>
+  <meta http-equiv="refresh" content={`0;url=${base}/en/today/`} />
+  <p><a href={`${base}/en/today/`}>Go to Telugu Panchangam USA</a></p>
 </noscript>

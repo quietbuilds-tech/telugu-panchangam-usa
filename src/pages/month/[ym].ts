@@ -14,6 +14,6 @@ export async function getStaticPaths() {
 
 export const GET: APIRoute = ({ params, redirect }) => {
   const ym = params.ym;
-  const base = import.meta.env.BASE_URL;
-  return redirect(`${base}/en/month/${ym}`, 302);
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+  return redirect(`${base}/en/month/${ym}/`, 302);
 };

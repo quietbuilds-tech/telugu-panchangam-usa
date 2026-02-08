@@ -4,6 +4,8 @@ import { translations } from '@/i18n';
 
 const { wide = false } = Astro.props;
 
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
 // Build/data stamp: helps verify that a rebuild picked up the latest JSON changes.
 let dataStamp: string | null = null;
 try {
@@ -27,6 +29,10 @@ const t = translations[lang];
 const pathname = Astro.url.pathname;
 const site = (import.meta.env.SITE || '').replace(/\/$/, '');
 const canonical = canonicalPath ? `${site}${canonicalPath}` : (site ? `${site}${pathname}` : undefined);
+
+// For hreflang alternates, strip the base prefix to get the route-relative path,
+// then reconstruct with proper lang prefix.
+const routePath = pathname.replace(new RegExp(`^${base}`), '');
 ---
 
 <html lang={lang}>
@@ -45,39 +51,39 @@ const canonical = canonicalPath ? `${site}${canonicalPath}` : (site ? `${site}${
     <link href="https://fonts.googleapis.com/css2?family=Anek+Telugu:wght@400;600;700&display=swap" rel="stylesheet" />
 
     {canonical ? <link rel="canonical" href={canonical} /> : null}
-    {site ? <link rel="alternate" hreflang="en" href={`${site}${pathname.replace(/^\/(en|te)/, '/en')}`} /> : null}
-    {site ? <link rel="alternate" hreflang="te" href={`${site}${pathname.replace(/^\/(en|te)/, '/te')}`} /> : null}
-    {site ? <link rel="alternate" hreflang="x-default" href={`${site}/en/today`} /> : null}
-    <link rel="stylesheet" href="/styles.css" />
+    {site ? <link rel="alternate" hreflang="en" href={`${site}${base}${routePath.replace(/^\/(en|te)/, '/en')}`} /> : null}
+    {site ? <link rel="alternate" hreflang="te" href={`${site}${base}${routePath.replace(/^\/(en|te)/, '/te')}`} /> : null}
+    {site ? <link rel="alternate" hreflang="x-default" href={`${site}${base}/en/today/`} /> : null}
+    <link rel="stylesheet" href={`${base}/styles.css`} />
   </head>
   <body>
     <header class="site-header">
       <div class="container">
         <div class="header-top">
           <div class="brand">
-            <a href={`/${lang}/today`} class="brand__title">{t.brandTitle}</a>
+            <a href={`${base}/${lang}/today/`} class="brand__title">{t.brandTitle}</a>
             <div class="brand__sub">{t.locationSub}</div>
           </div>
 
           <div class="lang-toggle" role="group" aria-label="Language">
             <a
               class={lang === 'en' ? 'lang-toggle__btn is-active' : 'lang-toggle__btn'}
-              href={pathname.replace(/^\/(en|te)/, '/en')}
+              href={`${base}${routePath.replace(/^\/(en|te)/, '/en')}`}
               data-lang-link="en"
             >EN</a>
             <a
               class={lang === 'te' ? 'lang-toggle__btn is-active' : 'lang-toggle__btn'}
-              href={pathname.replace(/^\/(en|te)/, '/te')}
+              href={`${base}${routePath.replace(/^\/(en|te)/, '/te')}`}
               data-lang-link="te"
             >అ</a>
           </div>
         </div>
 
         <nav class="tabs" aria-label="Primary">
-          <a class={activeTab === 'today' ? 'tab tab--active' : 'tab'} href={`/${lang}/today`}>{t.nav.today}</a>
-          <a class={activeTab === 'month' ? 'tab tab--active' : 'tab'} href={`/${lang}/month/2026-02`}>{t.nav.month}</a>
-          <a class={activeTab === 'festivals' ? 'tab tab--active' : 'tab'} href={`/${lang}/festivals/2026`}>{t.nav.festivals}</a>
-          <a class={activeTab === 'about' ? 'tab tab--active' : 'tab'} href={`/${lang}/about`}>{t.nav.about}</a>
+          <a class={activeTab === 'today' ? 'tab tab--active' : 'tab'} href={`${base}/${lang}/today/`}>{t.nav.today}</a>
+          <a class={activeTab === 'month' ? 'tab tab--active' : 'tab'} href={`${base}/${lang}/month/2026-02/`}>{t.nav.month}</a>
+          <a class={activeTab === 'festivals' ? 'tab tab--active' : 'tab'} href={`${base}/${lang}/festivals/2026/`}>{t.nav.festivals}</a>
+          <a class={activeTab === 'about' ? 'tab tab--active' : 'tab'} href={`${base}/${lang}/about/`}>{t.nav.about}</a>
         </nav>
       </div>
     </header>

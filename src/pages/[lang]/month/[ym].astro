@@ -49,6 +49,7 @@ const lang = langParam;
 const t = translations[lang];
 
 const year = await loadYearData();
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const label = ymToLabelLang(ym, lang);
 const { prev, next } = ymPrevNext(ym);
 
@@ -84,10 +85,10 @@ const desc = lang === 'te'
   <h1 class="h1">{label}</h1>
 
   <div class="row" style="margin: 10px 0 14px;">
-    <a class="btn" href={prev ? `/${lang}/month/${prev}` : '#'} aria-disabled={prev ? 'false' : 'true'}>
+    <a class="btn" href={prev ? `${base}/${lang}/month/${prev}/` : '#'} aria-disabled={prev ? 'false' : 'true'}>
       ‹ {prev ? ymToLabelLang(prev, lang).split(' ')[0] : '—'}
     </a>
-    <a class="btn" href={next ? `/${lang}/month/${next}` : '#'} aria-disabled={next ? 'false' : 'true'}>
+    <a class="btn" href={next ? `${base}/${lang}/month/${next}/` : '#'} aria-disabled={next ? 'false' : 'true'}>
       {next ? ymToLabelLang(next, lang).split(' ')[0] : '—'} ›
     </a>
   </div>
@@ -113,7 +114,7 @@ const desc = lang === 'te'
       const du = duLines.length ? duLines : null;
       const va = info?.varjyam?.type === 'ranges' ? formatTimeRanges('Va.', info?.varjyam?.ranges) : null;
       return (
-        <a class="cell" href={`/${lang}/date/${iso}`} aria-label={`Open Panchangam for ${iso}`}>
+        <a class="cell" href={`${base}/${lang}/date/${iso}/`} aria-label={`Open Panchangam for ${iso}`}>
           <div class="cell__date">{dayNum}{phase ? <span class={`moon moon--${phase}`} aria-hidden="true"></span> : null}</div>
           {info ? (
             <div class="cell__meta">
@@ -145,7 +146,7 @@ const desc = lang === 'te'
     {monthFestivals.length ? (
       <ul>
         {monthFestivals.map((f) => (
-          <li><a href={`/${lang}/date/${f.date}`}>{f.date}: {f.name}</a></li>
+          <li><a href={`${base}/${lang}/date/${f.date}/`}>{f.date}: {f.name}</a></li>
         ))}
       </ul>
     ) : (

@@ -24,6 +24,8 @@ const human = formatHumanDateLang(date, lang);
 const festivals = normalizeFestivalList(day.festivals, lang);
 
 
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
 const pageTitle = `${human.title} Telugu Panchangam (ET) — ${t.brandTitle}`;
 const desc = lang === 'te'
   ? `${human.title} (న్యూజెర్సీ, ఈస్ట్రన్ టైమ్) తెలుగు పంచాంగం — తిథి, నక్షత్రం, పండుగలు, సమయాలు.`
@@ -35,8 +37,8 @@ const desc = lang === 'te'
 
   <div class="card stack">
     <div class="btnrow">
-      <a class="btn" href={prev ? `/${lang}/date/${prev}` : '#'} aria-disabled={prev ? 'false' : 'true'}>{t.common.previous}</a>
-      <a class="btn" href={next ? `/${lang}/date/${next}` : '#'} aria-disabled={next ? 'false' : 'true'}>{t.common.next}</a>
+      <a class="btn" href={prev ? `${base}/${lang}/date/${prev}/` : '#'} aria-disabled={prev ? 'false' : 'true'}>{t.common.previous}</a>
+      <a class="btn" href={next ? `${base}/${lang}/date/${next}/` : '#'} aria-disabled={next ? 'false' : 'true'}>{t.common.next}</a>
     </div>
 
     <div class="kv"><div class="kv__k">{t.fields.samvatsaram}</div><div>{pickLabel(day.samvatsaram, lang)}</div></div>

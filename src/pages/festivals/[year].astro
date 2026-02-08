@@ -8,7 +8,8 @@ export function getStaticPaths() {
 }
 
 const { year } = Astro.params;
-const target = `/en/festivals/${year}`;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const target = `${base}/en/festivals/${year}/`;
 ---
 
 <!doctype html>

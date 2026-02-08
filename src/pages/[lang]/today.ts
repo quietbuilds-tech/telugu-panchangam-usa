@@ -10,8 +10,8 @@ export function getStaticPaths() {
 
 export const GET: APIRoute = ({ params, redirect }) => {
   const lang = params.lang as Lang;
-  const base = import.meta.env.BASE_URL;
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   const safeLang: Lang = LANGS.includes(lang) ? lang : "en";
   const date = etTodayISO();
-  return redirect(`${base}/${safeLang}/date/${date}`, 302);
+  return redirect(`${base}/${safeLang}/date/${date}/`, 302);
 };
