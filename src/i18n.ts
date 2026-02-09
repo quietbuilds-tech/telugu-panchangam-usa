@@ -41,10 +41,18 @@ export const translations: Record<Lang, {
     disclaimerTitle: string;
     disclaimerText: string;
   };
+  seo: {
+    keywords: string;
+    titleSuffix: string;
+  };
 }> = {
   en: {
     brandTitle: 'Telugu Panchangam USA',
     locationSub: 'New Jersey (Eastern Time)',
+    seo: {
+      keywords: 'telugu panchangam, telugu calendar, hindu calendar, panchangam usa, telugu panchangam new jersey, tithi today, nakshatra today, telugu festivals, panchangam eastern time, telugu panchangam 2026',
+      titleSuffix: 'Telugu Panchangam USA - NJ Eastern Time'
+    },
     nav: { today: 'Today', month: 'Month', festivals: 'Festivals', about: 'About' },
     common: {
       previous: '‹ Previous',
@@ -91,6 +99,10 @@ export const translations: Record<Lang, {
   te: {
     brandTitle: 'తెలుగు పంచాంగం USA',
     locationSub: 'న్యూజెర్సీ (ఈస్ట్రన్ టైమ్)',
+    seo: {
+      keywords: 'తెలుగు పంచాంగం, తెలుగు క్యాలెండర్, హిందూ క్యాలెండర్, పంచాంగం USA, తెలుగు పంచాంగం న్యూజెర్సీ, తిథి నేడు, నక్షత్రం నేడు, తెలుగు పండుగలు, పంచాంగం ఈస్ట్రన్ టైమ్, తెలుగు పంచాంగం 2026',
+      titleSuffix: 'తెలుగు పంచాంగం USA - NJ ఈస్ట్రన్ టైమ్'
+    },
     nav: { today: 'ఈ రోజు', month: 'నెల', festivals: 'పండుగలు', about: 'గురించి' },
     common: {
       previous: '‹ ముందు రోజు',

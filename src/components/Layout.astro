@@ -17,12 +17,16 @@ try {
   dataStamp = null;
 }
 
-const { title, description, activeTab, lang, canonicalPath } = Astro.props as {
+const { title, description, activeTab, lang, canonicalPath, structuredData, ogImage, ogType = 'website', breadcrumbs } = Astro.props as {
   title: string;
   description?: string;
   activeTab: 'today' | 'month' | 'festivals' | 'about';
   lang: Lang;
   canonicalPath?: string;
+  structuredData?: any[];
+  ogImage?: string;
+  ogType?: string;
+  breadcrumbs?: Array<{ name: string; url: string }>;
 };
 
 const t = translations[lang];
@@ -33,6 +37,62 @@ const canonical = canonicalPath ? `${site}${canonicalPath}` : (site ? `${site}${
 // For hreflang alternates, strip the base prefix to get the route-relative path,
 // then reconstruct with proper lang prefix.
 const routePath = pathname.replace(new RegExp(`^${base}`), '');
+
+// Default OG image
+const defaultOgImage = `${site}/og-image.jpg`;
+const ogImageUrl = ogImage || defaultOgImage;
+
+// Generate breadcrumb structured data if breadcrumbs provided
+const breadcrumbSchema = breadcrumbs ? {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": breadcrumbs.map((crumb, index) => ({
+    "@type": "ListItem",
+    "position": index + 1,
+    "name": crumb.name,
+    "item": `${site}${crumb.url}`
+  }))
+} : null;
+
+// WebSite schema with search action
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": t.brandTitle,
+  "url": site,
+  "description": lang === 'te'
+    ? "న్యూజెర్సీ (ఈస్ట్రన్ టైమ్) కోసం రోజువారీ తెలుగు పంచాంగం - తిథి, నక్షత్రం, పండుగలు"
+    : "Daily Telugu Panchangam for New Jersey (Eastern Time) - Tithi, Nakshatra, Festivals",
+  "inLanguage": lang,
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": `${site}/${lang}/date/{date}/`
+    },
+    "query-input": "required name=date"
+  }
+};
+
+// Organization schema
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": t.brandTitle,
+  "url": site,
+  "logo": `${site}/logo.png`,
+  "description": lang === 'te'
+    ? "తెలుగు పంచాంగం USA - న్యూజెర్సీ ఈస్ట్రన్ టైమ్ కోసం ఖచ్చితమైన హిందూ క్యాలెండర్"
+    : "Telugu Panchangam USA - Accurate Hindu Calendar for New Jersey Eastern Time"
+};
+
+// Combine all schemas
+const allSchemas = [
+  websiteSchema,
+  organizationSchema,
+  ...(breadcrumbSchema ? [breadcrumbSchema] : []),
+  ...(structuredData || [])
+];
 ---
 
 <html lang={lang}>
@@ -41,10 +101,30 @@ const routePath = pathname.replace(new RegExp(`^${base}`), '');
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     {description ? <meta name="description" content={description} /> : null}
-    <!-- Reduce client-side caching surprises during local preview. -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
+
+    <!-- Open Graph meta tags -->
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    {description ? <meta property="og:description" content={description} /> : null}
+    {canonical ? <meta property="og:url" content={canonical} /> : null}
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:site_name" content={t.brandTitle} />
+    <meta property="og:locale" content={lang === 'te' ? 'te_IN' : 'en_US'} />
+
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    {description ? <meta name="twitter:description" content={description} /> : null}
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- Additional SEO meta tags -->
+    <meta name="keywords" content={t.seo.keywords} />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="language" content={lang === 'te' ? 'Telugu' : 'English'} />
+    <meta name="geo.region" content="US-NJ" />
+    <meta name="geo.placename" content="New Jersey" />
+    <meta name="author" content={t.brandTitle} />
+
     <!-- Fonts: system UI (English) + Anek Telugu (Telugu script) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -55,6 +135,11 @@ const routePath = pathname.replace(new RegExp(`^${base}`), '');
     {site ? <link rel="alternate" hreflang="te" href={`${site}${base}${routePath.replace(/^\/(en|te)/, '/te')}`} /> : null}
     {site ? <link rel="alternate" hreflang="x-default" href={`${site}${base}/en/today/`} /> : null}
     <link rel="stylesheet" href={`${base}/styles.css`} />
+
+    <!-- Structured Data (JSON-LD) -->
+    {allSchemas.map(schema => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} />
+    ))}
   </head>
   <body>
     <header class="site-header">

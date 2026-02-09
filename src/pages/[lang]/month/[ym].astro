@@ -74,13 +74,54 @@ function firstTimedRaw(list: any[] | undefined, fallback = '—'): string {
 
 // formatTimeRanges() is imported from lib so month + day pages render Durmuhurtham/Varjyam consistently.
 
-const pageTitle = `${label} Telugu Panchangam (ET) — ${t.brandTitle}`;
+const site = (import.meta.env.SITE || '').replace(/\/$/, '');
+
+// Enhanced title with keywords
+const pageTitle = lang === 'te'
+  ? `${label} తెలుగు పంచాంగం క్యాలెండర్ USA | తిథి నక్షత్రం`
+  : `${label} Telugu Panchangam Calendar USA | Tithi Nakshatra`;
+
+// Rich description with festival preview
+const festivalPreview = monthFestivals.length > 0
+  ? monthFestivals.slice(0, 3).map(f => f.name).join(', ')
+  : '';
 const desc = lang === 'te'
-  ? `${label} కోసం నెలవారీ తెలుగు పంచాంగం క్యాలెండర్ (ఈస్ట్రన్ టైమ్).`
-  : `Monthly Telugu Panchangam calendar for ${label} in Eastern Time.`;
+  ? `${label} తెలుగు పంచాంగం క్యాలెండర్ (న్యూజెర్సీ, ఈస్ట్రన్ టైమ్). రోజువారీ తిథి, నక్షత్రం, దుర్ముహూర్తం సమయాలు${festivalPreview ? `. పండుగలు: ${festivalPreview}` : ''}.`
+  : `${label} Telugu Panchangam Calendar (New Jersey, Eastern Time). Daily tithi, nakshatra, durmuhurtham timings${festivalPreview ? `. Festivals: ${festivalPreview}` : ''}.`;
+
+// Breadcrumbs
+const breadcrumbs = [
+  { name: lang === 'te' ? 'హోమ్' : 'Home', url: `/${lang}/today/` },
+  { name: lang === 'te' ? 'నెల' : 'Month', url: `/${lang}/month/${ym}/` },
+  { name: label, url: `/${lang}/month/${ym}/` }
+];
+
+// Collection structured data for month calendar
+const collectionSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": pageTitle,
+  "description": desc,
+  "url": `${site}/${lang}/month/${ym}/`,
+  "inLanguage": lang,
+  "isPartOf": {
+    "@type": "WebSite",
+    "url": site
+  }
+};
+
+const structuredData = [collectionSchema];
 ---
 
-<Layout title={pageTitle} description={desc} activeTab="month" lang={lang} wide={true}>
+<Layout
+  title={pageTitle}
+  description={desc}
+  activeTab="month"
+  lang={lang}
+  wide={true}
+  structuredData={structuredData}
+  breadcrumbs={breadcrumbs}
+>
   <div class="month-head">
   <h1 class="h1">{label}</h1>
 

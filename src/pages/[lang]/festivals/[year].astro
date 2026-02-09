@@ -38,33 +38,197 @@ for (const date of Object.keys(data.daysByDate).sort()) {
 
 const months = Array.from({ length: 12 }, (_, i) => `2026-${String(i + 1).padStart(2, '0')}`);
 
+const site = (import.meta.env.SITE || '').replace(/\/$/, '');
+
+// Count total festivals
+const totalFestivals = Object.values(byMonth).reduce((sum, arr) => sum + arr.length, 0);
+
+// Get festival names preview for description
+const allFestivalNames = Object.values(byMonth)
+  .flat()
+  .map(f => f.name)
+  .slice(0, 5)
+  .join(', ');
+
+// Enhanced title with keywords
 const pageTitle = lang === 'te'
-  ? `2026 పండుగలు — ${t.brandTitle}`
-  : `Festivals 2026 — ${t.brandTitle}`;
+  ? `2026 తెలుగు పండుగలు USA | హిందూ పండుగలు క్యాలెండర్`
+  : `Telugu Festivals 2026 USA | Hindu Festivals Calendar`;
+
+// Rich description with preview
 const desc = lang === 'te'
-  ? `2026 సంవత్సరానికి నెలవారీ పండుగల జాబితా (ఈస్ట్రన్ టైమ్).`
-  : `Month-wise festivals list for 2026 (Eastern Time).`;
+  ? `2026 తెలుగు పండుగలు న్యూజెర్సీ ఈస్ట్రన్ టైమ్ కోసం పూర్తి జాబితా. ${totalFestivals}+ పండుగలు: ${allFestivalNames}. రోజువారీ పంచాంగం సమయాలతో.`
+  : `Complete list of Telugu Festivals 2026 for New Jersey Eastern Time. ${totalFestivals}+ festivals including ${allFestivalNames}. With daily panchangam timings.`;
+
+// Breadcrumbs
+const breadcrumbs = [
+  { name: lang === 'te' ? 'హోమ్' : 'Home', url: `/${lang}/today/` },
+  { name: lang === 'te' ? 'పండుగలు' : 'Festivals', url: `/${lang}/festivals/2026/` },
+  { name: '2026', url: `/${lang}/festivals/2026/` }
+];
+
+// ItemList structured data for festivals
+const festivalListSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": pageTitle,
+  "description": desc,
+  "numberOfItems": totalFestivals,
+  "itemListElement": Object.values(byMonth)
+    .flat()
+    .slice(0, 50) // Limit to first 50 for performance
+    .map((f, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "Event",
+        "name": f.name,
+        "startDate": f.date,
+        "endDate": f.date,
+        "location": {
+          "@type": "Place",
+          "name": "New Jersey, USA",
+          "address": {
+            "@type": "PostalAddress",
+            "addressRegion": "NJ",
+            "addressCountry": "US"
+          }
+        }
+      }
+    }))
+};
+
+// FAQ Schema
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": lang === 'te'
+        ? "2026లో తెలుగు ముఖ్య పండుగలు ఏమిటి?"
+        : "What are the major Telugu festivals in 2026?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": lang === 'te'
+          ? "2026లో తెలుగు ముఖ్య పండుగలు: ఉగాది, శ్రీరామ నవమి, వినాయక చవితి, దశహరా, దీపావళి, కార్తీక పౌర్ణమి. అన్ని పండుగలు న్యూజెర్సీ ఈస్ట్రన్ టైమ్ ప్రకారం చూపబడతాయి."
+          : "Major Telugu festivals in 2026 include: Ugadi, Sri Rama Navami, Vinayaka Chavithi, Dasara, Deepavali, Karthika Pournami. All festivals are shown according to New Jersey Eastern Time."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": lang === 'te'
+        ? "USA లో తెలుగు పంచాంగం ఎలా ఉపయోగించాలి?"
+        : "How to use Telugu Panchangam in USA?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": lang === 'te'
+          ? "USA (న్యూజెర్సీ, ఈస్ట్రన్ టైమ్) కోసం మేము ఖచ్చితమైన తెలుగు పంచాంగం అందిస్తున్నాము. ప్రతి రోజు తిథి, నక్షత్రం, పండుగలు, దుర్ముహూర్తం సమయాలు చూడవచ్చు."
+          : "We provide accurate Telugu Panchangam for USA (New Jersey, Eastern Time). You can view daily tithi, nakshatra, festivals, and durmuhurtham timings for each day."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": lang === 'te'
+        ? "తెలుగు పంచాంగం సమయాలు ఏ టైమ్ జోన్ లో ఉన్నాయి?"
+        : "What timezone are the Telugu Panchangam timings in?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": lang === 'te'
+          ? "అన్ని సమయాలు ఈస్ట్రన్ టైమ్ (ET / America/New_York) లో చూపబడతాయి. ఇది న్యూజెర్సీ, న్యూయార్క్, పెన్సిల్వేనియా, ఫ్లోరిడా వంటి రాష్ట్రాలకు వర్తిస్తుంది."
+          : "All timings are displayed in Eastern Time (ET / America/New_York). This applies to states like New Jersey, New York, Pennsylvania, and Florida."
+      }
+    }
+  ]
+};
+
+const structuredData = [festivalListSchema, faqSchema];
 ---
 
-<Layout title={pageTitle} description={desc} activeTab="festivals" lang={lang}>
-  <h1 class="h1">{lang === 'te' ? '2026 పండుగలు' : 'Festivals — 2026'}</h1>
+<Layout
+  title={pageTitle}
+  description={desc}
+  activeTab="festivals"
+  lang={lang}
+  structuredData={structuredData}
+  breadcrumbs={breadcrumbs}
+>
+  <article>
+    <header>
+      <h1 class="h1">{lang === 'te' ? '2026 తెలుగు పండుగలు' : 'Telugu Festivals 2026'}</h1>
+      <p style="color: #666; margin-top: -4px;">
+        {lang === 'te'
+          ? `న్యూజెర్సీ ఈస్ట్రన్ టైమ్ కోసం ${totalFestivals}+ పండుగలు`
+          : `${totalFestivals}+ festivals for New Jersey Eastern Time`}
+      </p>
+    </header>
 
-  {months.map((ym) => {
-    const list = byMonth[ym] ?? [];
-    const label = ymToLabelLang(ym, lang);
-    return (
-      <section class="card" style="margin: 12px 0;">
-        <h2 class="h2" style="margin-top: 0;">{label}</h2>
-        {list.length ? (
-          <ul>
-            {list.map((f) => (
-              <li><a href={`${base}/${lang}/date/${f.date}/`}>{f.date}: {f.name}</a></li>
-            ))}
-          </ul>
-        ) : (
-          <p class="muted">{t.common.noFestivals}</p>
-        )}
-      </section>
-    );
-  })}
+    {months.map((ym) => {
+      const list = byMonth[ym] ?? [];
+      const label = ymToLabelLang(ym, lang);
+      return (
+        <section class="card" style="margin: 12px 0;">
+          <h2 class="h2" style="margin-top: 0;">{label}</h2>
+          {list.length ? (
+            <ul>
+              {list.map((f) => (
+                <li><a href={`${base}/${lang}/date/${f.date}/`}>{f.date}: {f.name}</a></li>
+              ))}
+            </ul>
+          ) : (
+            <p class="muted">{t.common.noFestivals}</p>
+          )}
+        </section>
+      );
+    })}
+
+    <section class="card" style="margin-top: 24px;" itemscope itemtype="https://schema.org/FAQPage">
+      <h2 class="h2">{lang === 'te' ? 'తరచుగా అడిగే ప్రశ్నలు' : 'Frequently Asked Questions'}</h2>
+
+      <div style="margin-top: 16px;" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+        <h3 style="font-size: 1.1rem; margin-bottom: 8px;" itemprop="name">
+          {lang === 'te'
+            ? '2026లో తెలుగు ముఖ్య పండుగలు ఏమిటి?'
+            : 'What are the major Telugu festivals in 2026?'}
+        </h3>
+        <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">
+            {lang === 'te'
+              ? '2026లో తెలుగు ముఖ్య పండుగలు: ఉగాది, శ్రీరామ నవమి, వినాయక చవితి, దశహరా, దీపావళి, కార్తీక పౌర్ణమి. అన్ని పండుగలు న్యూజెర్సీ ఈస్ట్రన్ టైమ్ ప్రకారం చూపబడతాయి.'
+              : 'Major Telugu festivals in 2026 include: Ugadi, Sri Rama Navami, Vinayaka Chavithi, Dasara, Deepavali, Karthika Pournami. All festivals are shown according to New Jersey Eastern Time.'}
+          </p>
+        </div>
+      </div>
+
+      <div style="margin-top: 16px;" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+        <h3 style="font-size: 1.1rem; margin-bottom: 8px;" itemprop="name">
+          {lang === 'te'
+            ? 'USA లో తెలుగు పంచాంగం ఎలా ఉపయోగించాలి?'
+            : 'How to use Telugu Panchangam in USA?'}
+        </h3>
+        <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">
+            {lang === 'te'
+              ? 'USA (న్యూజెర్సీ, ఈస్ట్రన్ టైమ్) కోసం మేము ఖచ్చితమైన తెలుగు పంచాంగం అందిస్తున్నాము. ప్రతి రోజు తిథి, నక్షత్రం, పండుగలు, దుర్ముహూర్తం సమయాలు చూడవచ్చు.'
+              : 'We provide accurate Telugu Panchangam for USA (New Jersey, Eastern Time). You can view daily tithi, nakshatra, festivals, and durmuhurtham timings for each day.'}
+          </p>
+        </div>
+      </div>
+
+      <div style="margin-top: 16px;" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+        <h3 style="font-size: 1.1rem; margin-bottom: 8px;" itemprop="name">
+          {lang === 'te'
+            ? 'తెలుగు పంచాంగం సమయాలు ఏ టైమ్ జోన్ లో ఉన్నాయి?'
+            : 'What timezone are the Telugu Panchangam timings in?'}
+        </h3>
+        <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+          <p itemprop="text">
+            {lang === 'te'
+              ? 'అన్ని సమయాలు ఈస్ట్రన్ టైమ్ (ET / America/New_York) లో చూపబడతాయి. ఇది న్యూజెర్సీ, న్యూయార్క్, పెన్సిల్వేనియా, ఫ్లోరిడా వంటి రాష్ట్రాలకు వర్తిస్తుంది.'
+              : 'All timings are displayed in Eastern Time (ET / America/New_York). This applies to states like New Jersey, New York, Pennsylvania, and Florida.'}
+          </p>
+        </div>
+      </div>
+    </section>
+  </article>
 </Layout>

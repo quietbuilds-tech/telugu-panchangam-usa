@@ -15,16 +15,30 @@ const months = Array.from(new Set(dates.map(d => d.slice(0, 7)))).sort();
 
 const langs = ['en', 'te'];
 
-const urls = [
-  `/`,
+// Define URL structure with priority and changefreq for better SEO
+const today = new Date().toISOString().split('T')[0];
+const currentMonth = today.slice(0, 7);
+
+const urlConfigs = [
+  { url: `/`, priority: 1.0, changefreq: 'daily' },
   ...langs.flatMap(l => [
-    `/${l}/`,
-    `/${l}/today/`,
-    ...dates.map(d => `/${l}/date/${d}/`),
-    ...months.map(m => `/${l}/month/${m}/`),
-    `/${l}/festivals/`,
-    `/${l}/festivals/2026/`,
-    `/${l}/about/`,
+    { url: `/${l}/`, priority: 0.9, changefreq: 'daily' },
+    { url: `/${l}/today/`, priority: 1.0, changefreq: 'daily' },
+    // Date pages - higher priority for current and upcoming dates
+    ...dates.map(d => ({
+      url: `/${l}/date/${d}/`,
+      priority: d === today ? 1.0 : d > today ? 0.8 : 0.6,
+      changefreq: d === today ? 'hourly' : d >= today ? 'daily' : 'monthly'
+    })),
+    // Month pages - higher priority for current month
+    ...months.map(m => ({
+      url: `/${l}/month/${m}/`,
+      priority: m === currentMonth ? 0.9 : 0.7,
+      changefreq: m === currentMonth ? 'daily' : 'weekly'
+    })),
+    { url: `/${l}/festivals/`, priority: 0.8, changefreq: 'weekly' },
+    { url: `/${l}/festivals/2026/`, priority: 0.9, changefreq: 'weekly' },
+    { url: `/${l}/about/`, priority: 0.5, changefreq: 'monthly' },
   ]),
 ];
 
@@ -34,9 +48,14 @@ function xmlEscape(s) {
 
 const now = new Date().toISOString();
 
-const body = urls.map(u => {
-  const loc = xmlEscape(`${site}${u}`);
-  return `  <url><loc>${loc}</loc><lastmod>${now}</lastmod></url>`;
+const body = urlConfigs.map(config => {
+  const loc = xmlEscape(`${site}${config.url}`);
+  return `  <url>
+    <loc>${loc}</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>${config.changefreq}</changefreq>
+    <priority>${config.priority.toFixed(1)}</priority>
+  </url>`;
 }).join('\n');
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?>\n` +
@@ -48,7 +67,7 @@ if (!fs.existsSync(distDir)) {
 }
 
 fs.writeFileSync(path.join(distDir, 'sitemap.xml'), xml, 'utf-8');
-console.log(`Generated sitemap.xml with ${urls.length} URLs`);
+console.log(`Generated sitemap.xml with ${urlConfigs.length} URLs (with priority and changefreq)`);
 
 const robotsPath = path.join(distDir, 'robots.txt');
 if (fs.existsSync(robotsPath)) {

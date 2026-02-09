@@ -23,88 +23,190 @@ const { prev, next } = nextPrevDates(allDatesSorted, date);
 const human = formatHumanDateLang(date, lang);
 const festivals = normalizeFestivalList(day.festivals, lang);
 
-
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const site = (import.meta.env.SITE || '').replace(/\/$/, '');
 
-const pageTitle = `${human.title} Telugu Panchangam (ET) — ${t.brandTitle}`;
+// Extract key panchangam data for meta description
+const firstTithi = day.tithi?.[0] ? pickTimedLabel(day.tithi[0], lang) : '';
+const firstNakshatra = day.nakshatra?.[0] ? pickTimedLabel(day.nakshatra[0], lang) : '';
+const festivalNames = festivals.map(f => f.name).join(', ');
+
+// Enhanced meta title with keywords
+const pageTitle = lang === 'te'
+  ? `${human.title} తెలుగు పంచాంగం USA | తిథి నక్షత్రం సమయాలు`
+  : `${human.title} Telugu Panchangam USA | Tithi Nakshatra Timings`;
+
+// Rich meta description with actual panchangam data
 const desc = lang === 'te'
-  ? `${human.title} (న్యూజెర్సీ, ఈస్ట్రన్ టైమ్) తెలుగు పంచాంగం — తిథి, నక్షత్రం, పండుగలు, సమయాలు.`
-  : `Telugu Panchangam for ${human.title} in New Jersey (Eastern Time): tithi, nakshatra, festivals and timings.`;
+  ? `${human.title} తెలుగు పంచాంగం (న్యూజెర్సీ, ఈస్ట్రన్ టైమ్): తిథి ${firstTithi}, నక్షత్రం ${firstNakshatra}${festivalNames ? `, పండుగలు: ${festivalNames}` : ''}. దుర్ముహూర్తం, వర్జ్యం సమయాలు చూడండి.`
+  : `Telugu Panchangam for ${human.title} in New Jersey (Eastern Time): Tithi ${firstTithi}, Nakshatra ${firstNakshatra}${festivalNames ? `, Festivals: ${festivalNames}` : ''}. View Durmuhurtham, Varjyam timings.`;
+
+// Breadcrumb navigation
+const breadcrumbs = [
+  { name: lang === 'te' ? 'హోమ్' : 'Home', url: `/${lang}/today/` },
+  { name: human.title, url: `/${lang}/date/${date}/` }
+];
+
+// Event structured data for festivals (if any)
+const eventSchemas = festivals.map(festival => ({
+  "@context": "https://schema.org",
+  "@type": "Event",
+  "name": festival.name,
+  "startDate": date,
+  "endDate": date,
+  "eventAttendanceMode": "https://schema.org/MixedEventAttendanceMode",
+  "location": {
+    "@type": "Place",
+    "name": "New Jersey, USA",
+    "address": {
+      "@type": "PostalAddress",
+      "addressRegion": "NJ",
+      "addressCountry": "US"
+    }
+  },
+  "description": lang === 'te'
+    ? `${human.title} న ${festival.name} పండుగ`
+    : `${festival.name} festival on ${human.title}`,
+  "organizer": {
+    "@type": "Organization",
+    "name": t.brandTitle,
+    "url": site
+  }
+}));
+
+// Article structured data for the panchangam page
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": pageTitle,
+  "description": desc,
+  "datePublished": date,
+  "dateModified": date,
+  "author": {
+    "@type": "Organization",
+    "name": t.brandTitle
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": t.brandTitle,
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${site}/logo.png`
+    }
+  },
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": `${site}/${lang}/date/${date}/`
+  }
+};
+
+const structuredData = [articleSchema, ...eventSchemas];
 ---
 
-<Layout title={pageTitle} description={desc} activeTab="today" lang={lang}>
-  <h1 class="h1">{human.title} • {human.weekday}</h1>
+<Layout
+  title={pageTitle}
+  description={desc}
+  activeTab="today"
+  lang={lang}
+  structuredData={structuredData}
+  breadcrumbs={breadcrumbs}
+  ogType="article"
+>
+  <article itemscope itemtype="https://schema.org/Article">
+    <header>
+      <h1 class="h1" itemprop="headline">{human.title} • {human.weekday}</h1>
+      <p style="margin-top: -8px; margin-bottom: 12px; color: #666;">
+        <a href={`${base}/${lang}/month/${date.slice(0, 7)}/`} style="text-decoration: underline;">
+          {lang === 'te' ? 'నెల క్యాలెండర్ చూడండి' : 'View month calendar'}
+        </a>
+      </p>
+    </header>
 
-  <div class="card stack">
-    <div class="btnrow">
-      <a class="btn" href={prev ? `${base}/${lang}/date/${prev}/` : '#'} aria-disabled={prev ? 'false' : 'true'}>{t.common.previous}</a>
-      <a class="btn" href={next ? `${base}/${lang}/date/${next}/` : '#'} aria-disabled={next ? 'false' : 'true'}>{t.common.next}</a>
-    </div>
-
-    <div class="kv"><div class="kv__k">{t.fields.samvatsaram}</div><div>{pickLabel(day.samvatsaram, lang)}</div></div>
-    <div class="kv"><div class="kv__k">{t.fields.ayanam}</div><div>{pickLabel(day.ayanam, lang)}</div></div>
-    <div class="kv"><div class="kv__k">{t.fields.ruthuvu}</div><div>{pickLabel(day.ruthuvu, lang)}</div></div>
-    <div class="kv"><div class="kv__k">{t.fields.masam}</div><div>{pickLabel(day.masam, lang)}</div></div>
-    <div class="kv"><div class="kv__k">{t.fields.paksham}</div><div>{pickLabel(day.paksham, lang)}</div></div>
-
-    <div class="kv">
-      <div class="kv__k">{t.fields.tithi}</div>
-      <div class="pills">
-        {day.tithi?.map((ti) => (
-          <span class="pill pill--plain">
-            {pickTimedLabel(ti, lang)}{ti.qualifier ? ` (${ti.qualifier})` : ''}{ti.time ? ` • ${t.fields.until} ${ti.time}${ti.rollover ? '+' : ''}` : ''}
-          </span>
-        ))}
+    <section class="card stack" itemprop="articleBody">
+      <div class="btnrow">
+        <a class="btn" href={prev ? `${base}/${lang}/date/${prev}/` : '#'} aria-disabled={prev ? 'false' : 'true'} rel="prev">
+          {t.common.previous}
+        </a>
+        <a class="btn" href={next ? `${base}/${lang}/date/${next}/` : '#'} aria-disabled={next ? 'false' : 'true'} rel="next">
+          {t.common.next}
+        </a>
       </div>
-    </div>
 
-    <div class="kv">
-      <div class="kv__k">{t.fields.nakshatra}</div>
-      <div class="pills">
-        {day.nakshatra?.map((n) => (
-          <span class="pill pill--plain">
-            {pickTimedLabel(n, lang)}{n.qualifier ? ` (${n.qualifier})` : ''}{n.time ? ` • ${t.fields.until} ${n.time}${n.rollover ? '+' : ''}` : ''}
-          </span>
-        ))}
+      <div class="kv"><div class="kv__k">{t.fields.samvatsaram}</div><div itemprop="keywords">{pickLabel(day.samvatsaram, lang)}</div></div>
+      <div class="kv"><div class="kv__k">{t.fields.ayanam}</div><div>{pickLabel(day.ayanam, lang)}</div></div>
+      <div class="kv"><div class="kv__k">{t.fields.ruthuvu}</div><div>{pickLabel(day.ruthuvu, lang)}</div></div>
+      <div class="kv"><div class="kv__k">{t.fields.masam}</div><div itemprop="keywords">{pickLabel(day.masam, lang)}</div></div>
+      <div class="kv"><div class="kv__k">{t.fields.paksham}</div><div>{pickLabel(day.paksham, lang)}</div></div>
+
+      <div class="kv">
+        <div class="kv__k">{t.fields.tithi}</div>
+        <div class="pills">
+          {day.tithi?.map((ti) => (
+            <span class="pill pill--plain" itemprop="keywords">
+              {pickTimedLabel(ti, lang)}{ti.qualifier ? ` (${ti.qualifier})` : ''}{ti.time ? ` • ${t.fields.until} ${ti.time}${ti.rollover ? '+' : ''}` : ''}
+            </span>
+          ))}
+        </div>
       </div>
-    </div>
 
-    <div class="kv">
-      <div class="kv__k">{t.fields.durmuhurtham}</div>
-      <div>
-        {day.durmuhurtham?.length
-          ? day.durmuhurtham.map((r) => formatTimeRange(r)).filter(Boolean).join(', ')
-          : <span class="muted">—</span>}
+      <div class="kv">
+        <div class="kv__k">{t.fields.nakshatra}</div>
+        <div class="pills">
+          {day.nakshatra?.map((n) => (
+            <span class="pill pill--plain" itemprop="keywords">
+              {pickTimedLabel(n, lang)}{n.qualifier ? ` (${n.qualifier})` : ''}{n.time ? ` • ${t.fields.until} ${n.time}${n.rollover ? '+' : ''}` : ''}
+            </span>
+          ))}
+        </div>
       </div>
-    </div>
 
-    <div class="kv">
-      <div class="kv__k">{t.fields.varjyam}</div>
-      <div>
-        {day.varjyam?.type === 'none'
-          ? t.fields.none
-          : day.varjyam?.type === 'ranges'
-            ? day.varjyam.ranges.map((r) => formatTimeRange(r)).filter(Boolean).join(', ')
-            : <span class="muted">{t.fields.unknown}</span>}
+      <div class="kv">
+        <div class="kv__k">{t.fields.durmuhurtham}</div>
+        <div>
+          {day.durmuhurtham?.length
+            ? day.durmuhurtham.map((r) => formatTimeRange(r)).filter(Boolean).join(', ')
+            : <span class="muted">—</span>}
+        </div>
       </div>
-    </div>
 
-    <div class="kv">
-      <div class="kv__k">{t.common.festivalsNotes}</div>
-      <div>
-        {festivals.length ? (
-          festivals.length === 1 ? (
-            <div>{festivals[0].name}</div>
+      <div class="kv">
+        <div class="kv__k">{t.fields.varjyam}</div>
+        <div>
+          {day.varjyam?.type === 'none'
+            ? t.fields.none
+            : day.varjyam?.type === 'ranges'
+              ? day.varjyam.ranges.map((r) => formatTimeRange(r)).filter(Boolean).join(', ')
+              : <span class="muted">{t.fields.unknown}</span>}
+        </div>
+      </div>
+
+      <div class="kv">
+        <div class="kv__k">{t.common.festivalsNotes}</div>
+        <div>
+          {festivals.length ? (
+            festivals.length === 1 ? (
+              <div itemprop="about">{festivals[0].name}</div>
+            ) : (
+              <ul>
+                {festivals.map((f) => <li itemprop="about">{f.name}</li>)}
+              </ul>
+            )
           ) : (
-            <ul>
-              {festivals.map((f) => <li>{f.name}</li>)}
-            </ul>
-          )
-        ) : (
-          <span class="muted">{t.common.noFestivals}</span>
-        )}
+            <span class="muted">{t.common.noFestivals}</span>
+          )}
+        </div>
       </div>
-    </div>
+    </section>
 
-  </div>
+    {festivals.length > 0 && (
+      <section class="card" style="margin-top: 20px;">
+        <h2 class="h2">{lang === 'te' ? 'సంబంధిత పండుగలు' : 'Related Festivals'}</h2>
+        <p>
+          <a href={`${base}/${lang}/festivals/2026/`}>
+            {lang === 'te' ? '2026 అన్ని పండుగలు చూడండి' : 'View all 2026 festivals'}
+          </a>
+        </p>
+      </section>
+    )}
+  </article>
 </Layout>

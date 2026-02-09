@@ -11,24 +11,125 @@ if (!LANGS.includes(langParam)) throw new Error(`Unsupported lang: ${langParam}`
 const lang = langParam;
 const t = translations[lang];
 
-const pageTitle = `${t.about.title} — ${t.brandTitle}`;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const site = (import.meta.env.SITE || '').replace(/\/$/, '');
+
+// Enhanced title with keywords
+const pageTitle = lang === 'te'
+  ? `గురించి - తెలుగు పంచాంగం USA | New Jersey Eastern Time`
+  : `About - Telugu Panchangam USA | New Jersey Eastern Time`;
+
+// Rich description
+const desc = lang === 'te'
+  ? 'తెలుగు పంచాంగం USA గురించి: న్యూజెర్సీ ఈస్ట్రన్ టైమ్ కోసం ఖచ్చితమైన రోజువారీ పంచాంగం. తిథి, నక్షత్రం, పండుగలు, దుర్ముహూర్తం, వర్జ్యం సమయాలు.'
+  : 'About Telugu Panchangam USA: Accurate daily panchangam for New Jersey Eastern Time. Get tithi, nakshatra, festivals, durmuhurtham, and varjyam timings.';
+
+// Breadcrumbs
+const breadcrumbs = [
+  { name: lang === 'te' ? 'హోమ్' : 'Home', url: `/${lang}/today/` },
+  { name: lang === 'te' ? 'గురించి' : 'About', url: `/${lang}/about/` }
+];
+
+// AboutPage structured data
+const aboutSchema = {
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "name": pageTitle,
+  "description": desc,
+  "url": `${site}/${lang}/about/`,
+  "mainEntity": {
+    "@type": "Organization",
+    "name": t.brandTitle,
+    "url": site,
+    "description": t.about.blurb,
+    "areaServed": {
+      "@type": "Place",
+      "name": "New Jersey, USA"
+    }
+  }
+};
+
+const structuredData = [aboutSchema];
 ---
 
-<Layout title={pageTitle} description={t.about.blurb} activeTab="about" lang={lang}>
-  <h1 class="h1">{t.about.title}</h1>
+<Layout
+  title={pageTitle}
+  description={desc}
+  activeTab="about"
+  lang={lang}
+  structuredData={structuredData}
+  breadcrumbs={breadcrumbs}
+>
+  <article itemscope itemtype="https://schema.org/AboutPage">
+    <h1 class="h1" itemprop="name">{t.about.title}</h1>
 
-  <div class="card stack">
-    <p>{t.about.blurb}</p>
+    <div class="card stack">
+      <p itemprop="description">{t.about.blurb}</p>
 
-    <h2 class="h2">{t.about.sourceTitle}</h2>
-    <p class="muted">{t.about.sourceText}</p>
+      <h2 class="h2">{t.about.sourceTitle}</h2>
+      <p class="muted">{t.about.sourceText}</p>
 
-    <h2 class="h2">{t.about.includesTitle}</h2>
-    <ul>
-      {t.about.includes.map((it) => <li>{it}</li>)}
-    </ul>
+      <h2 class="h2">{t.about.includesTitle}</h2>
+      <ul>
+        {t.about.includes.map((it) => <li>{it}</li>)}
+      </ul>
 
-    <h2 class="h2">{t.about.disclaimerTitle}</h2>
-    <p class="muted">{t.about.disclaimerText}</p>
-  </div>
+      <h2 class="h2">
+        {lang === 'te' ? 'ముఖ్య లక్షణాలు' : 'Key Features'}
+      </h2>
+      <ul>
+        <li>
+          {lang === 'te'
+            ? 'న్యూజెర్సీ (ఈస్ట్రన్ టైమ్) కోసం ఖచ్చితమైన సమయాలు'
+            : 'Accurate timings for New Jersey (Eastern Time)'}
+        </li>
+        <li>
+          {lang === 'te'
+            ? 'రోజువారీ తిథి మరియు నక్షత్రం సమయాలతో'
+            : 'Daily tithi and nakshatra with timings'}
+        </li>
+        <li>
+          {lang === 'te'
+            ? 'పూర్తి పండుగల క్యాలెండర్ 2026'
+            : 'Complete festivals calendar 2026'}
+        </li>
+        <li>
+          {lang === 'te'
+            ? 'దుర్ముహూర్తం మరియు వర్జ్యం సమయాలు'
+            : 'Durmuhurtham and Varjyam timings'}
+        </li>
+        <li>
+          {lang === 'te'
+            ? 'తెలుగు మరియు ఇంగ్లీష్ రెండు భాషలలో అందుబాటులో'
+            : 'Available in both Telugu and English'}
+        </li>
+      </ul>
+
+      <h2 class="h2">{t.about.disclaimerTitle}</h2>
+      <p class="muted">{t.about.disclaimerText}</p>
+
+      <div style="margin-top: 24px; padding: 16px; background: #f5f5f5; border-radius: 8px;">
+        <h3 style="margin-top: 0;">
+          {lang === 'te' ? 'మరిన్ని లింకులు' : 'More Resources'}
+        </h3>
+        <ul style="margin-bottom: 0;">
+          <li>
+            <a href={`${base}/${lang}/today/`}>
+              {lang === 'te' ? 'నేటి పంచాంగం' : "Today's Panchangam"}
+            </a>
+          </li>
+          <li>
+            <a href={`${base}/${lang}/month/2026-02/`}>
+              {lang === 'te' ? 'నెల క్యాలెండర్' : 'Monthly Calendar'}
+            </a>
+          </li>
+          <li>
+            <a href={`${base}/${lang}/festivals/2026/`}>
+              {lang === 'te' ? '2026 పండుగలు' : '2026 Festivals'}
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </article>
 </Layout>
