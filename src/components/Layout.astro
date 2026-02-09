@@ -39,7 +39,7 @@ const canonical = canonicalPath ? `${site}${canonicalPath}` : (site ? `${site}${
 const routePath = pathname.replace(new RegExp(`^${base}`), '');
 
 // Default OG image
-const defaultOgImage = `${site}/og-image.jpg`;
+const defaultOgImage = `${site}/og-image.png`;
 const ogImageUrl = ogImage || defaultOgImage;
 
 // Generate breadcrumb structured data if breadcrumbs provided
@@ -134,6 +134,7 @@ const allSchemas = [
     {site ? <link rel="alternate" hreflang="en" href={`${site}${base}${routePath.replace(/^\/(en|te)/, '/en')}`} /> : null}
     {site ? <link rel="alternate" hreflang="te" href={`${site}${base}${routePath.replace(/^\/(en|te)/, '/te')}`} /> : null}
     {site ? <link rel="alternate" hreflang="x-default" href={`${site}${base}/en/today/`} /> : null}
+    <link rel="icon" href={`${base}/favicon.ico`} sizes="32x32" />
     <link rel="stylesheet" href={`${base}/styles.css`} />
 
     <!-- Structured Data (JSON-LD) -->
