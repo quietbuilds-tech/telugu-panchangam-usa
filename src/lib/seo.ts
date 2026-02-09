@@ -26,6 +26,7 @@ export function createFestivalEventSchema(
     "name": festivalName,
     "startDate": date,
     "endDate": date,
+    "image": `${site}/og-image.png`,
     "eventAttendanceMode": "https://schema.org/MixedEventAttendanceMode",
     "eventStatus": "https://schema.org/EventScheduled",
     "location": {
@@ -65,6 +66,7 @@ export function createArticleSchema(
     "@type": "Article",
     "headline": title,
     "description": description,
+    "image": `${site}/og-image.png`,
     "datePublished": date,
     "dateModified": date,
     "url": url,

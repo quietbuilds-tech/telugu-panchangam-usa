@@ -54,7 +54,9 @@ const eventSchemas = festivals.map(festival => ({
   "name": festival.name,
   "startDate": date,
   "endDate": date,
+  "image": `${site}/og-image.png`,
   "eventAttendanceMode": "https://schema.org/MixedEventAttendanceMode",
+  "eventStatus": "https://schema.org/EventScheduled",
   "location": {
     "@type": "Place",
     "name": "New Jersey, USA",
@@ -80,6 +82,7 @@ const articleSchema = {
   "@type": "Article",
   "headline": pageTitle,
   "description": desc,
+  "image": `${site}/og-image.png`,
   "datePublished": date,
   "dateModified": date,
   "author": {
