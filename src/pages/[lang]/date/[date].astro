@@ -116,9 +116,9 @@ const structuredData = [articleSchema, ...eventSchemas];
   breadcrumbs={breadcrumbs}
   ogType="article"
 >
-  <article itemscope itemtype="https://schema.org/Article">
+  <article>
     <header>
-      <h1 class="h1" itemprop="headline">{human.title} • {human.weekday}</h1>
+      <h1 class="h1">{human.title} • {human.weekday}</h1>
       <p style="margin-top: -8px; margin-bottom: 12px; color: #666;">
         <a href={`${base}/${lang}/month/${date.slice(0, 7)}/`} style="text-decoration: underline;">
           {lang === 'te' ? 'నెల క్యాలెండర్ చూడండి' : 'View month calendar'}
@@ -126,7 +126,7 @@ const structuredData = [articleSchema, ...eventSchemas];
       </p>
     </header>
 
-    <section class="card stack" itemprop="articleBody">
+    <section class="card stack">
       <div class="btnrow">
         <a class="btn" href={prev ? `${base}/${lang}/date/${prev}/` : '#'} aria-disabled={prev ? 'false' : 'true'} rel="prev">
           {t.common.previous}
@@ -136,17 +136,17 @@ const structuredData = [articleSchema, ...eventSchemas];
         </a>
       </div>
 
-      <div class="kv"><div class="kv__k">{t.fields.samvatsaram}</div><div itemprop="keywords">{pickLabel(day.samvatsaram, lang)}</div></div>
+      <div class="kv"><div class="kv__k">{t.fields.samvatsaram}</div><div>{pickLabel(day.samvatsaram, lang)}</div></div>
       <div class="kv"><div class="kv__k">{t.fields.ayanam}</div><div>{pickLabel(day.ayanam, lang)}</div></div>
       <div class="kv"><div class="kv__k">{t.fields.ruthuvu}</div><div>{pickLabel(day.ruthuvu, lang)}</div></div>
-      <div class="kv"><div class="kv__k">{t.fields.masam}</div><div itemprop="keywords">{pickLabel(day.masam, lang)}</div></div>
+      <div class="kv"><div class="kv__k">{t.fields.masam}</div><div>{pickLabel(day.masam, lang)}</div></div>
       <div class="kv"><div class="kv__k">{t.fields.paksham}</div><div>{pickLabel(day.paksham, lang)}</div></div>
 
       <div class="kv">
         <div class="kv__k">{t.fields.tithi}</div>
         <div class="pills">
           {day.tithi?.map((ti) => (
-            <span class="pill pill--plain" itemprop="keywords">
+            <span class="pill pill--plain">
               {pickTimedLabel(ti, lang)}{ti.qualifier ? ` (${ti.qualifier})` : ''}{ti.time ? ` • ${t.fields.until} ${ti.time}${ti.rollover ? '+' : ''}` : ''}
             </span>
           ))}
@@ -157,7 +157,7 @@ const structuredData = [articleSchema, ...eventSchemas];
         <div class="kv__k">{t.fields.nakshatra}</div>
         <div class="pills">
           {day.nakshatra?.map((n) => (
-            <span class="pill pill--plain" itemprop="keywords">
+            <span class="pill pill--plain">
               {pickTimedLabel(n, lang)}{n.qualifier ? ` (${n.qualifier})` : ''}{n.time ? ` • ${t.fields.until} ${n.time}${n.rollover ? '+' : ''}` : ''}
             </span>
           ))}
@@ -189,10 +189,10 @@ const structuredData = [articleSchema, ...eventSchemas];
         <div>
           {festivals.length ? (
             festivals.length === 1 ? (
-              <div itemprop="about">{festivals[0].name}</div>
+              <div>{festivals[0].name}</div>
             ) : (
               <ul>
-                {festivals.map((f) => <li itemprop="about">{f.name}</li>)}
+                {festivals.map((f) => <li>{f.name}</li>)}
               </ul>
             )
           ) : (
