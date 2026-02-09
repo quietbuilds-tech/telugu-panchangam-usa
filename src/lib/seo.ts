@@ -67,8 +67,8 @@ export function createArticleSchema(
     "headline": title,
     "description": description,
     "image": `${site}/og-image.png`,
-    "datePublished": date,
-    "dateModified": date,
+    "datePublished": `${date}T00:00:00-05:00`,
+    "dateModified": `${date}T00:00:00-05:00`,
     "url": url,
     "author": {
       "@type": "Organization",
