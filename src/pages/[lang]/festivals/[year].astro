@@ -87,6 +87,9 @@ const festivalListSchema = {
         "endDate": f.date,
         "image": `${site}/og-image.png`,
         "eventStatus": "https://schema.org/EventScheduled",
+        "description": lang === 'te'
+          ? `${f.name} పండుగ - ${f.date}`
+          : `${f.name} festival - ${f.date}`,
         "location": {
           "@type": "Place",
           "name": "New Jersey, USA",
