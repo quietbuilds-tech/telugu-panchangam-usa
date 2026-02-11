@@ -80,6 +80,11 @@ const eventSchemas = festivals.map(festival => ({
     "priceCurrency": "USD",
     "availability": "https://schema.org/InStock",
     "url": `${site}/${lang}/date/${date}/`
+  },
+  "performer": {
+    "@type": "Organization",
+    "name": t.brandTitle,
+    "url": site
   }
 }));
 

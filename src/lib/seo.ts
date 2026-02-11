@@ -53,6 +53,11 @@ export function createFestivalEventSchema(
       "availability": "https://schema.org/InStock",
       "url": site
     },
+    "performer": {
+      "@type": "Organization",
+      "name": brandTitle,
+      "url": site
+    },
     "inLanguage": lang
   };
 }

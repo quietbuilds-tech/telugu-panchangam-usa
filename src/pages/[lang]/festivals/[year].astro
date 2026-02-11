@@ -110,6 +110,11 @@ const festivalListSchema = {
           "priceCurrency": "USD",
           "availability": "https://schema.org/InStock",
           "url": `${site}/${lang}/date/${f.date}/`
+        },
+        "performer": {
+          "@type": "Organization",
+          "name": t.brandTitle,
+          "url": site
         }
       }
     }))
