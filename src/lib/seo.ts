@@ -46,6 +46,13 @@ export function createFestivalEventSchema(
       "name": brandTitle,
       "url": site
     },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock",
+      "url": site
+    },
     "inLanguage": lang
   };
 }
