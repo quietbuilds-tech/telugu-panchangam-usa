@@ -51,6 +51,7 @@ export function createFestivalEventSchema(
       "price": "0",
       "priceCurrency": "USD",
       "availability": "https://schema.org/InStock",
+      "validFrom": `${date}T00:00:00-05:00`,
       "url": site
     },
     "performer": {
